@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 
 # Configuration
-GEMINI_API_KEY = os.getenv("API_KEY")  # Replace with your actual API key
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # Replace with your actual API key
 INDEX_DIRECTORY = "./cdp_docs_index"
 
 # Initialize the index and query engine
