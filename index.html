@@ -5,94 +5,308 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CDP Chatbot</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d4;
+            --light-bg: #f8f9fa;
+            --dark-text: #333;
+            --light-text: #fff;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e9ecef;
+            color: var(--dark-text);
+            line-height: 1.6;
             padding: 20px;
-            background-color: #f0f0f0;
-        }
-        .chat-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .chat-header {
-            background: #007bff;
-            color: white;
-            padding: 10px;
-            text-align: center;
-        }
-        .chat-messages {
-            padding: 20px;
-            height: 400px;
-            overflow-y: auto;
-        }
-        .message {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .user-message {
-            background: #007bff;
-            color: white;
-            margin-left: 20%;
-        }
-        .bot-message {
-            background: #e9ecef;
-            margin-right: 20%;
-        }
-        .chat-input {
-            padding: 20px;
-            border-top: 1px solid #ddd;
+            min-height: 100vh;
             display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 850px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 85vh;
+            max-height: 700px;
+        }
+        
+        .chat-header {
+            background: var(--primary-color);
+            color: var(--light-text);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .chat-logo {
+            display: flex;
+            align-items: center;
             gap: 10px;
         }
-        #message-input {
-            flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        
+        .chat-logo svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
         }
-        button {
-            padding: 10px 20px;
-            background: #007bff;
+        
+        .chat-messages {
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: #f5f7fa;
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 20px;
+        }
+        
+        .message {
+            margin: 12px 0;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 75%;
+            animation: fadeIn 0.3s ease;
+            position: relative;
+            line-height: 1.5;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message-container {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .user-container {
+            justify-content: flex-end;
+        }
+        
+        .bot-container {
+            justify-content: flex-start;
+        }
+        
+        .user-message {
+            background: var(--primary-color);
             color: white;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+        }
+        
+        .bot-message {
+            background: white;
+            color: var(--dark-text);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            align-self: flex-start;
+        }
+        
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 8px;
+            flex-shrink: 0;
+        }
+        
+        .bot-avatar {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .user-avatar {
+            background-color: #7678ed;
+            color: white;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 18px;
+            max-width: 75%;
+            align-self: flex-start;
+            margin: 12px 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #aaa;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typingAnimation 1.5s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typingAnimation {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .chat-input {
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: white;
+        }
+        
+        .input-wrapper {
+            position: relative;
+            flex-grow: 1;
+            display: flex;
+        }
+        
+        #message-input {
+            width: 100%;
+            padding: 14px 16px;
+            padding-right: 45px;
+            border: 1px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 16px;
+            transition: var(--transition);
+            outline: none;
+        }
+        
+        #message-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+        
+        #send-button {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            transition: var(--transition);
             border: none;
-            border-radius: 4px;
             cursor: pointer;
         }
-        button:hover {
-            background: #0056b3;
+        
+        #send-button:hover {
+            background: var(--primary-hover);
         }
+        
+        #send-button svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+        
         .status-indicator {
-            padding: 10px;
+            padding: 8px 12px;
             text-align: center;
             color: #666;
             font-size: 14px;
-            border-top: 1px solid #ddd;
+            background-color: var(--light-bg);
+            border-top: 1px solid #e0e0e0;
         }
+        
         .status-indicator.connected {
-            color: green;
+            color: #2e7d32;
         }
+        
         .status-indicator.disconnected {
-            color: red;
+            color: #c62828;
+        }
+        
+        @media (max-width: 576px) {
+            body {
+                padding: 0;
+            }
+            
+            .chat-container {
+                width: 100%;
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+            
+            .message {
+                max-width: 85%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h2>CDP Documentation Chatbot</h2>
+            <div class="chat-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 2C6.486 2 2 6.486 2 12c0 5.513 4.486 10 10 10s10-4.487 10-10c0-5.514-4.486-10-10-10zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/>
+                    <path d="M13 7h-2v6h2V7zm0 8h-2v2h2v-2z"/>
+                </svg>
+                <h2>CDP Documentation Assistant</h2>
+            </div>
         </div>
         <div class="chat-messages" id="chat-messages">
             <!-- Messages will appear here -->
         </div>
         <div class="chat-input">
-            <input type="text" id="message-input" placeholder="Ask about CDP documentation...">
-            <button id="send-button" onclick="sendMessage()">Send</button>
+            <div class="input-wrapper">
+                <input type="text" id="message-input" placeholder="Ask me about CDP documentation...">
+                <button id="send-button" title="Send message">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
         <div id="status-indicator" class="status-indicator">
             Checking connection...
@@ -112,15 +326,65 @@
         
         // Add welcome message
         window.onload = function() {
-            addMessage("👋 Hello! I'm your CDP documentation assistant. How can I help you today?");
+            addBotMessage("👋 Hello! I'm your CDP documentation assistant. How can I help you today?");
         };
 
-        function addMessage(content, isUser = false) {
+        function addBotMessage(content) {
+            const container = document.createElement('div');
+            container.className = 'message-container bot-container';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar bot-avatar';
+            avatar.textContent = 'CDP';
+            
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.className = 'message bot-message';
             messageDiv.textContent = content;
-            chatMessages.appendChild(messageDiv);
+            
+            container.appendChild(avatar);
+            container.appendChild(messageDiv);
+            chatMessages.appendChild(container);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addUserMessage(content) {
+            const container = document.createElement('div');
+            container.className = 'message-container user-container';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user-message';
+            messageDiv.textContent = content;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar user-avatar';
+            avatar.textContent = 'You';
+            
+            container.appendChild(messageDiv);
+            container.appendChild(avatar);
+            chatMessages.appendChild(container);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const typing = document.createElement('div');
+            typing.className = 'typing-indicator';
+            typing.id = 'typing-indicator';
+            
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'typing-dot';
+                typing.appendChild(dot);
+            }
+            
+            chatMessages.appendChild(typing);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
         }
 
         async function sendMessage() {
@@ -131,8 +395,11 @@
             messageInput.disabled = true;
             sendButton.disabled = true;
 
-            addMessage(query, true);
+            addUserMessage(query);
             messageInput.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
 
             try {
                 const response = await fetch(`${API_BASE_URL}/chat`, {
@@ -149,13 +416,20 @@
 
                 const data = await response.json();
                 
-                if (data.status === 'success') {
-                    addMessage(data.response);
-                } else {
-                    addMessage('Error: ' + (data.error || 'Something went wrong'));
-                }
+                // Simulate a short delay to show typing
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    
+                    if (data.status === 'success') {
+                        addBotMessage(data.response);
+                    } else {
+                        addBotMessage('Error: ' + (data.error || 'Something went wrong'));
+                    }
+                }, Math.random() * 500 + 300); // Random delay between 300-800ms
+                
             } catch (error) {
-                addMessage(`Error: ${error.message || 'Failed to connect to the server'}`);
+                removeTypingIndicator();
+                addBotMessage(`Error: ${error.message || 'Failed to connect to the server'}`);
                 console.error('Error in sendMessage:', error);
             } finally {
                 // Re-enable input
@@ -173,7 +447,6 @@
             }
         });
 
-        // Initial health check
         async function checkServerHealth() {
             try {
                 const response = await fetch(`${API_BASE_URL}/health`);
@@ -185,20 +458,20 @@
                 const data = await response.json();
                 
                 if (data.status === 'ok') {
-                    statusIndicator.textContent = '✅ Connected to server';
+                    statusIndicator.innerHTML = '✅ Connected to server';
                     statusIndicator.className = 'status-indicator connected';
                     
                     if (!data.index_available) {
-                        addMessage('⚠️ Warning: No documentation index available. Some features may be limited.');
+                        addBotMessage('⚠️ Warning: No documentation index available. Some features may be limited.');
                     }
                 } else {
                     throw new Error('Server reported unhealthy status');
                 }
             } catch (error) {
                 console.error('Health check failed:', error);
-                statusIndicator.textContent = '❌ Disconnected: Cannot reach server';
+                statusIndicator.innerHTML = '❌ Disconnected: Cannot reach server';
                 statusIndicator.className = 'status-indicator disconnected';
-                addMessage('⚠️ Cannot connect to the server. Please check your connection or try again later.');
+                addBotMessage('⚠️ Cannot connect to the server. Please check your connection or try again later.');
             }
         }
 
