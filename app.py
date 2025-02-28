@@ -4,11 +4,13 @@ from llama_index.llms.gemini import Gemini
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import Settings
 import os
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
 
 # Configuration
-GEMINI_API_KEY = "AIzaSyBlET66vMBvzxA_20YKxfexLDNervnH6hI"  # Replace with your actual API key
+GEMINI_API_KEY = os.getenv("API_KEY")  # Replace with your actual API key
 INDEX_DIRECTORY = "./cdp_docs_index"
 
 # Initialize the index and query engine
