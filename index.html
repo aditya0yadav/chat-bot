@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDP Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .chat-header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        .chat-messages {
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: 20%;
+        }
+        .bot-message {
+            background: #e9ecef;
+            margin-right: 20%;
+        }
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+        #message-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status-indicator {
+            padding: 10px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #ddd;
+        }
+        .status-indicator.connected {
+            color: green;
+        }
+        .status-indicator.disconnected {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>CDP Documentation Chatbot</h2>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages will appear here -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="message-input" placeholder="Ask about CDP documentation...">
+            <button id="send-button" onclick="sendMessage()">Send</button>
+        </div>
+        <div id="status-indicator" class="status-indicator">
+            Checking connection...
+        </div>
+    </div>
+
+    <script>
+        // Configuration - update these URLs to your actual API endpoints
+        const API_BASE_URL = 'https://5000-aditya0yadav-chatbot-ziewbj47mvb.ws-us118.gitpod.io/api'; // Use relative URL for production
+        // For local development, use absolute URL:
+        // const API_BASE_URL = 'http://localhost:5000/api';
+        
+        const chatMessages = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const statusIndicator = document.getElementById('status-indicator');
+        
+        // Add welcome message
+        window.onload = function() {
+            addMessage("👋 Hello! I'm your CDP documentation assistant. How can I help you today?");
+        };
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.textContent = content;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const query = messageInput.value.trim();
+            if (!query) return;
+
+            // Disable input while processing
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+
+            addMessage(query, true);
+            messageInput.value = '';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    addMessage(data.response);
+                } else {
+                    addMessage('Error: ' + (data.error || 'Something went wrong'));
+                }
+            } catch (error) {
+                addMessage(`Error: ${error.message || 'Failed to connect to the server'}`);
+                console.error('Error in sendMessage:', error);
+            } finally {
+                // Re-enable input
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // Allow sending message with Enter key
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Initial health check
+        async function checkServerHealth() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.status === 'ok') {
+                    statusIndicator.textContent = '✅ Connected to server';
+                    statusIndicator.className = 'status-indicator connected';
+                    
+                    if (!data.index_available) {
+                        addMessage('⚠️ Warning: No documentation index available. Some features may be limited.');
+                    }
+                } else {
+                    throw new Error('Server reported unhealthy status');
+                }
+            } catch (error) {
+                console.error('Health check failed:', error);
+                statusIndicator.textContent = '❌ Disconnected: Cannot reach server';
+                statusIndicator.className = 'status-indicator disconnected';
+                addMessage('⚠️ Cannot connect to the server. Please check your connection or try again later.');
+            }
+        }
+
+        // Run health check when page loads
+        checkServerHealth();
+    </script>
+</body>
+</html>

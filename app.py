@@ -20,11 +20,9 @@ def initialize_index():
         # Configure embedding model
         embed_model = HuggingFaceEmbedding(model_name="all-MiniLM-L6-v2")
         
-        # Set up LlamaIndex settings
         Settings.llm = llm
         Settings.embed_model = embed_model
         
-        # Load existing index
         if os.path.exists(INDEX_DIRECTORY):
             storage_context = StorageContext.from_defaults(persist_dir=INDEX_DIRECTORY)
             index = load_index_from_storage(storage_context)
@@ -53,6 +51,7 @@ def chat():
             
         # Get response from the query engine
         response = query_engine.query(query)
+        print(response)
         
         return jsonify({
             "query": query,
